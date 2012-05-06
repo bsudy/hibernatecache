@@ -1,0 +1,10 @@
+Moresby Coffee Code
+http://moresbycoffee.blogspot.co.uk 
+
+Copyright (c) 2012, Barnabas Sudy (barnabas.sudy@gmail.com)
+
+This code consists of a bunch of test cases to demonstrate the hibernate cache behavior.
+You can read more in my blog posts:
+http://moresbycoffee.blogspot.co.uk/2012/05/hibernate-caching-part-i-introduction.html
+http://moresbycoffee.blogspot.co.uk/2012/05/hibernate-caching-part-ii-concurrency.html
+http://moresbycoffee.blogspot.co.uk/2012/05/hibernate-caching-part-iii-caches-in.html
