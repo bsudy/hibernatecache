@@ -30,7 +30,6 @@
  */
 package com.moresby.hibernatecache.domain;
 
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -249,13 +248,7 @@ public class ReadOnlyTest extends EntityManagerTest {
      * @param em
      */
     private void countEntities(final EntityManager em, final String emName) {
-        final long startTimestamp = new Date().getTime();
-        @SuppressWarnings("unchecked")
-        final List<ReadOnlyEntity> rewriteEntities = em.createQuery("select rw from ReadOnlyEntity rw").setHint("org.hibernate.cacheable", true).getResultList();
-        final long endTimeStamp = new Date().getTime();
-
-        final long time = endTimeStamp - startTimestamp;
-        LOG.info(emName + " found " + rewriteEntities.size() + " ReadOnly entities in " + time + " ms");
+        getEntities(em, ReadOnlyEntity.class, emName);
     }
 
 

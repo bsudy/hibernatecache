@@ -39,6 +39,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 import org.apache.log4j.Logger;
 import org.hibernate.cache.spi.Region;
@@ -78,32 +80,37 @@ public abstract class EntityManagerTest {
 
     }
 
+
     /**
      * @param em
      */
-    protected List<ReadOnlyEntity> getROEntities(final EntityManager em, final String emName) {
+    protected <T> List<T> getEntities(final EntityManager em, final Class<T> type, final String emName) {
+        final CriteriaQuery<T> criteria = em.getCriteriaBuilder().createQuery(type);
+        final Root<T> root = criteria.from(type);
+        criteria.select(root);
+
         final long startTimestamp = new Date().getTime();
-        @SuppressWarnings("unchecked")
-        final List<ReadOnlyEntity> entities = em.createQuery("select rw from ReadOnlyEntity rw").setHint("org.hibernate.cacheable", true).getResultList();
+
+        final List<T> entities = em.createQuery(criteria).setHint("org.hibernate.cacheable", true).getResultList();
         final long endTimeStamp = new Date().getTime();
 
         final long time = endTimeStamp - startTimestamp;
-        LOG.info(emName + " found " + entities.size() + " ReadOnly entities in " + time + " ms");
+        LOG.info(emName + " found " + entities.size() + " ReadWrite entities in " + time + " ms");
         return entities;
     }
 
     /**
      * @param em
      */
-    protected List<NoCacheEntity> getNoCacheEntities(final EntityManager em, final String emName) {
-        final long startTimestamp = new Date().getTime();
-        @SuppressWarnings("unchecked")
-        final List<NoCacheEntity> entities = em.createQuery("select e from NoCacheEntity e").setHint("org.hibernate.cacheable", true).getResultList();
-        final long endTimeStamp = new Date().getTime();
+    protected List<ReadOnlyEntity> getROEntities(final EntityManager em, final String emName) {
+        return getEntities(em, ReadOnlyEntity.class, emName);
+    }
 
-        final long time = endTimeStamp - startTimestamp;
-        LOG.info(emName + " found " + entities.size() + " ReadOnly entities in " + time + " ms");
-        return entities;
+    /**
+     * @param em
+     */
+    protected List<NoCacheEntity> getNoCacheEntities(final EntityManager em, final String emName) {
+        return getEntities(em, NoCacheEntity.class, emName);
     }
 
     /**
@@ -217,18 +224,5 @@ public abstract class EntityManagerTest {
         }
     }
 
-    /**
-     * @param em
-     */
-    protected List<NoStrictEntity> getNoStrictEntities(final EntityManager em, final String emName) {
-        final long startTimestamp = new Date().getTime();
-        @SuppressWarnings("unchecked")
-        final List<NoStrictEntity> entities = em.createQuery("select rw from NoStrictEntity rw").setHint("org.hibernate.cacheable", true).getResultList();
-        final long endTimeStamp = new Date().getTime();
-
-        final long time = endTimeStamp - startTimestamp;
-        LOG.info(emName + " found " + entities.size() + " ReadWrite entities in " + time + " ms");
-        return entities;
-    }
 
 }

@@ -74,7 +74,7 @@ public class NoStrictReadWriteTest extends EntityManagerTest {
          * Query cache: New query added.
          * 2nd level cache: Entities from the result added.
          */
-        getNoStrictEntities(em1, "EM1");
+        countEntities(em1, "EM1");
         printStat(em1, "EM1");
         assertStat(em1, 1, 0, 0, 90);
 
@@ -86,7 +86,7 @@ public class NoStrictReadWriteTest extends EntityManagerTest {
          * Query cache: The query will be found in the query cache.
          * 2nd level cache: The entities in 2nd level cache.
          */
-        getNoStrictEntities(em2, "EM2");
+        countEntities(em2, "EM2");
         printStat(em2, "EM2");
         assertStat(em1, 0, 1, 90, 0);
 
@@ -98,7 +98,7 @@ public class NoStrictReadWriteTest extends EntityManagerTest {
          * Query cache: In use
          * 2nd level cache: 1st level cache instead of the 2nd level cache.
          */
-        getNoStrictEntities(em1, "EM1");
+        countEntities(em1, "EM1");
         printStat(em1, "EM1");
         assertStat(em1, 0, 1, 0, 0);
 
@@ -114,7 +114,7 @@ public class NoStrictReadWriteTest extends EntityManagerTest {
              * Query cache: In use
              * 2nd level cache: In use.
              */
-            getNoStrictEntities(em3, "EM3");
+            countEntities(em3, "EM3");
             printStat(em3, "EM3");
             assertStat(em1, 0, 1, 90, 0);
 
@@ -135,7 +135,7 @@ public class NoStrictReadWriteTest extends EntityManagerTest {
          * Query cache: Not in use
          * 2nd level cache: Not in use
          */
-        getNoStrictEntities(em1, "EM1");
+        countEntities(em1, "EM1");
         printStat(em1, "EM1");
         assertStat(em1, 1, 0, 0, 0);
 
@@ -153,7 +153,7 @@ public class NoStrictReadWriteTest extends EntityManagerTest {
              * 2nd level cache: In use
              */
             try {
-                getNoStrictEntities(em3, "EM1");
+                countEntities(em3, "EM1");
                 Assert.fail("An exception should have been thrown.");
             } catch (final PersistenceException e) {
                 LOG.info("The database table is locked. " + e.getMessage());
@@ -171,7 +171,7 @@ public class NoStrictReadWriteTest extends EntityManagerTest {
          * Query cache: New result added.
          * 2nd level cache: New entity added.
          */
-        getNoStrictEntities(em2, "EM2");
+        countEntities(em2, "EM2");
         printStat(em2, "EM2");
         assertStat(em1, 1, 0, 0, 1);
 
@@ -188,7 +188,7 @@ public class NoStrictReadWriteTest extends EntityManagerTest {
              * Query cache: In use
              * 2nd level cache: In use
              */
-            getNoStrictEntities(em3, "EM1");
+            countEntities(em3, "EM1");
             printStat(em3, "EM1");
             assertStat(em1, 0, 1, 91, 0);
 
@@ -221,7 +221,7 @@ public class NoStrictReadWriteTest extends EntityManagerTest {
          * Query cache: New query added.
          * 2nd level cache: Entities from the result added.
          */
-        getNoStrictEntities(em1, "EM1");
+        countEntities(em1, "EM1");
         printStat(em1, "EM1");
         assertStat(em1, 1, 0, 0, 90);
 
@@ -233,7 +233,7 @@ public class NoStrictReadWriteTest extends EntityManagerTest {
          * Query cache: The query will be found in the query cache.
          * 2nd level cache: The entities in 2nd level cache.
          */
-        getNoStrictEntities(em2, "EM2");
+        countEntities(em2, "EM2");
         printStat(em2, "EM2");
         assertStat(em1, 0, 1, 90, 0);
 
@@ -245,7 +245,7 @@ public class NoStrictReadWriteTest extends EntityManagerTest {
          * Query cache: In use
          * 2nd level cache: 1st level cache instead of the 2nd level cache.
          */
-        getNoStrictEntities(em1, "EM1");
+        countEntities(em1, "EM1");
         printStat(em1, "EM1");
         assertStat(em1, 0, 1, 0, 0);
 
@@ -262,7 +262,7 @@ public class NoStrictReadWriteTest extends EntityManagerTest {
              * Query cache: In use
              * 2nd level cache: In use.
              */
-            getNoStrictEntities(em3, "EM3");
+            countEntities(em3, "EM3");
             printStat(em3, "EM3");
             assertStat(em3, 0, 1, 90, 0);
 
@@ -287,7 +287,7 @@ public class NoStrictReadWriteTest extends EntityManagerTest {
          * Query cache: Not in use
          * 2nd level cache: Not in use
          */
-        getNoStrictEntities(em1, "EM1");
+        countEntities(em1, "EM1");
         printStat(em1, "EM1");
         assertStat(em1, 1, 0, 0, 0);
 
@@ -305,7 +305,7 @@ public class NoStrictReadWriteTest extends EntityManagerTest {
              * 2nd level cache: In use
              */
             try {
-                getNoStrictEntities(em3, "EM1");
+                countEntities(em3, "EM1");
                 Assert.fail("An exception should have been thrown.");
             } catch (final PersistenceException e) {
                 LOG.info("The database table is locked. " + e.getMessage());
@@ -324,7 +324,7 @@ public class NoStrictReadWriteTest extends EntityManagerTest {
          * 2nd level cache: Modified entity added.
          */
         em2.clear();
-        getNoStrictEntities(em2, "EM2");
+        countEntities(em2, "EM2");
         printStat(em2, "EM2");
         assertStat(em1, 1, 0, 0, 1);
 
@@ -340,7 +340,7 @@ public class NoStrictReadWriteTest extends EntityManagerTest {
              * Query cache: In use
              * 2nd level cache: In use
              */
-            getNoStrictEntities(em3, "EM1");
+            countEntities(em3, "EM1");
             printStat(em3, "EM1");
             assertStat(em3, 0, 1, 90, 0);
 
@@ -352,6 +352,11 @@ public class NoStrictReadWriteTest extends EntityManagerTest {
 
     }
 
-
+    /**
+     * @param em
+     */
+    protected void countEntities(final EntityManager em, final String emName) {
+        getEntities(em, NoStrictEntity.class, emName);
+    }
 
 }

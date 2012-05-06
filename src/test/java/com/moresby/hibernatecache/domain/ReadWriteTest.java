@@ -31,7 +31,6 @@
 package com.moresby.hibernatecache.domain;
 
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -430,13 +429,7 @@ public class ReadWriteTest extends EntityManagerTest {
      * @param em
      */
     private void countEntities(final EntityManager em, final String emName) {
-        final long startTimestamp = new Date().getTime();
-        @SuppressWarnings("unchecked")
-        final List<ReadWriteEntity> rewriteEntities = em.createQuery("select rw from ReadWriteEntity rw").setHint("org.hibernate.cacheable", true).getResultList();
-        final long endTimeStamp = new Date().getTime();
-
-        final long time = endTimeStamp - startTimestamp;
-        LOG.info(emName + " found " + rewriteEntities.size() + " ReadWrite entities in " + time + " ms");
+        getEntities(em, ReadWriteEntity.class, emName);
     }
 
 
