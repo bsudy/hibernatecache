@@ -95,7 +95,7 @@ public abstract class EntityManagerTest {
         final long endTimeStamp = new Date().getTime();
 
         final long time = endTimeStamp - startTimestamp;
-        LOG.info(emName + " found " + entities.size() + " ReadWrite entities in " + time + " ms");
+        LOG.info(emName + " found " + entities.size() + " " + type.getName() + " entities in " + time + " ms");
         return entities;
     }
 
