@@ -120,8 +120,14 @@ public class SecondLevelCache extends EntityManagerTest {
 
     }
 
+    /**
+     * In this test I'm retrieving all the ReadOnlyEntity-s,
+     * and put them into the 2nd level cache.
+     * After it using the <code>find</code> the hibernate is able
+     * to pick up the proper entity from the 2nd level cache.
+     */
     @Test
-    public void noFindable() {
+    public void findable() {
         final List<ReadOnlyEntity> entitiesEm1 = getROEntities(em1, "EM1");
 
         printStat(em1, "EM1");
@@ -138,6 +144,13 @@ public class SecondLevelCache extends EntityManagerTest {
 
     }
 
+    /**
+     * In this test I'm retrieving all the ReadOnlyEntity-s,
+     * and put them into the 2nd level cache.
+     * After it a second query tries to find one of them with a
+     * JPQL expression but Hibernate won't use 2nd level cache
+     * it is forwarding the query to the database.
+     */
     @Test
     public void noQueryable() {
         final List<ReadOnlyEntity> entitiesEm1 = getROEntities(em1, "EM1");

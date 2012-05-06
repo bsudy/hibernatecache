@@ -51,6 +51,11 @@ public class QueryCacheTest extends EntityManagerTest {
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger.getLogger(QueryCacheTest.class);
 
+    /**
+     * Using Query cache without 2nd level cache can cause a huge number of database hit
+     * because the query cache result contains only the primary keys and the entities will
+     * be picked up from the database one-by-one.
+     */
     @Test
     public void withoutSecondLevelCacheTest() {
         final EntityManager em1 = emf.createEntityManager();

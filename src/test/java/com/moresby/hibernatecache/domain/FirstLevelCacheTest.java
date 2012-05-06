@@ -76,6 +76,10 @@ public class FirstLevelCacheTest extends EntityManagerTest {
             transaction.commit();
 
             assertEquals(newEntity, em1.find(ReadWriteEntity.class, newEntity.getId()));
+
+            /* If you clear the 1st level cache than you loose the references. */
+//            em1.clear();
+//            assertEquals(newEntity, em1.find(ReadWriteEntity.class, newEntity.getId()));
         } finally {
             em1.close();
         }
