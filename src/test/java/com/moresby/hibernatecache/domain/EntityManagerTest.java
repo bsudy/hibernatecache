@@ -147,6 +147,32 @@ public abstract class EntityManagerTest {
                         em1.persist(new NoStrictEntity("noStrict" + j));
                     }
                 }
+
+                final Station westminster = new Station("Westminster");
+                em1.persist(westminster);
+
+                final Station victoria = new Station("Victoria");
+                em1.persist(victoria);
+
+                final Line district = new Line("District");
+                em1.persist(district);
+
+                final Line circle = new Line("Circle");
+                em1.persist(circle);
+
+                district.getStations().add(victoria);
+                district.getStations().add(westminster);
+
+                circle.getStations().add(victoria);
+                circle.getStations().add(westminster);
+
+                victoria.getLines().add(district);
+                victoria.getLines().add(circle);
+
+                westminster.getLines().add(district);
+                westminster.getLines().add(circle);
+
+
             } catch (final Exception e) {
                 transaction.rollback();
                 throw e;
