@@ -28,15 +28,17 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.hibernatecache.domain;
+package org.moresbycoffee.hibernatecache.domain;
+
+import static org.junit.Assert.*;
 
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
 import org.junit.Test;
+import org.moresbycoffee.hibernatecache.domain.NoCacheEntity;
 
 /**
  * TODO javadoc.
@@ -44,45 +46,41 @@ import org.junit.Test;
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class ManyToManyCacheTest extends EntityManagerTest {
+public class QueryCacheTest extends EntityManagerTest {
 
     /** Logger. */
-    private static final Logger LOG = Logger.getLogger(ManyToManyCacheTest.class);
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger.getLogger(QueryCacheTest.class);
 
-
-    private Station getStationByName(final EntityManager em, final String stationName) {
-        final Query query = em.createQuery("from Station where name like :stationName");
-        query.setParameter("stationName", stationName);
-        return (Station) query.getSingleResult();
-    }
-
+    /**
+     * Using Query cache without 2nd level cache can cause a huge number of database hit
+     * because the query cache result contains only the primary keys and the entities will
+     * be picked up from the database one-by-one.
+     */
     @Test
-    public void testLazyFetchFirstLevelCache() {
-
+    public void withoutSecondLevelCacheTest() {
         final EntityManager em1 = emf.createEntityManager();
-
-        final Station westminster = getStationByName(em1, "Westminster");
-        printStat(em1, "EM1");
-        assertStat(em1, 1, 0, 0, 1);
-
-        final List<Line> linesAtWestminster = westminster.getLines();
-        for (final Line line : linesAtWestminster) {
-            LOG.info("Line: " + line.getName());
-        }
+        //Number of the insert statements
+        final List<NoCacheEntity> entitiesNoChacheEm1 = getNoCacheEntities(em1, "EM1");
 
         printStat(em1, "EM1");
-        assertStat(em1, 1, 0, 0, 3); //Why only 1???
+        /* Entities haven't been added to 2nd level cache. */
+        assertStat(em1, 1, 0, 0, 0);
+        //One select statement added
+        em1.close();
 
-        final Station victoria = getStationByName(em1, "Victoria");
-        printStat(em1, "EM1");
-        assertStat(em1, 1, 0, 0, 1);
+        final EntityManager em2 = emf.createEntityManager();
+        final List<NoCacheEntity> entitiesNoChacheEm2 = getNoCacheEntities(em2, "EM1");
 
-        final List<Line> linesAtVictoria = victoria.getLines();
-        for (final Line line : linesAtVictoria) {
-            LOG.info("Line: " + line.getName());
-        }
-        printStat(em1, "EM1");
-        assertStat(em1, 1, 0, 0, 1); //Why only 1???
+        printStat(em2, "EM2");
+        /* Entities haven't been added to 2nd level cache. */
+        assertStat(em2, 90, 1, 0, 0);
+
+        assertEquals(entitiesNoChacheEm1.size(), entitiesNoChacheEm2.size());
+        em2.close();
+
     }
+
+
 
 }

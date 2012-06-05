@@ -28,7 +28,7 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.hibernatecache.domain;
+package org.moresbycoffee.hibernatecache.domain;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

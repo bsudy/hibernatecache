@@ -28,53 +28,98 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.hibernatecache.domain;
+package org.moresbycoffee.hibernatecache.domain;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
- * An entity configured with {@link CacheConcurrencyStrategy#READ_ONLY Read-only} cache strategy.
- * 
+ * Database entity to represent a railway line.
+ *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.READ_ONLY)
-public class ReadOnlyEntity {
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+public class Line {
 
+    /** Unique identifier. <tt>null</tt> until it's persisted. */
     @Id
     @GeneratedValue
     private Long id;
 
+    /** The name of the line. (NonNull) */
     private String name;
 
-    /** Default constructor for Hibernate. */
-    ReadOnlyEntity() { /* NOP */ }
+    /** The list of the stations on the line. (NonNull) */
+    @ManyToMany
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    private List<Station> stations = new ArrayList<Station>();
 
-    public ReadOnlyEntity(final String name) {
+    /** Default constructor for hibernate. */
+    Line() { /* NOP */ }
+
+    /**
+     * @param name The name of the line. (NonNull)
+     */
+    public Line(final String name) {
         super();
         this.name = name;
     }
 
+    /**
+     * @return Unique identifier. <tt>null</tt> until it's persisted.
+     */
     public Long getId() {
         return id;
     }
 
-    public void setId(final Long id) {
+    /**
+     * @param id The unique identifier to set. (package private to avoid modification.)
+     */
+    void setId(final Long id) {
         this.id = id;
     }
 
+    /**
+     * @return The name of the line. (NonNull)
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @param name The name of the line to set. (NonNull)
+     */
     public void setName(final String name) {
         this.name = name;
     }
+
+    /**
+     * @return the stations The list of the stations on the line. (NonNull)
+     */
+    public List<Station> getStations() {
+        return stations;
+    }
+
+    /**
+     * @param stations The list of the stations on the line to set. (NonNull)
+     */
+    void setStations(final List<Station> stations) {
+        this.stations = stations;
+    }
+
+
+
+
+
 
 }

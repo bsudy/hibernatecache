@@ -28,7 +28,7 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.hibernatecache.domain;
+package org.moresbycoffee.hibernatecache.domain;
 
 import java.util.Date;
 import java.util.Formatter;
@@ -49,6 +49,12 @@ import org.hibernate.internal.SessionImpl;
 import org.hibernate.stat.Statistics;
 import org.junit.Assert;
 import org.junit.Before;
+import org.moresbycoffee.hibernatecache.domain.Line;
+import org.moresbycoffee.hibernatecache.domain.NoCacheEntity;
+import org.moresbycoffee.hibernatecache.domain.NoStrictEntity;
+import org.moresbycoffee.hibernatecache.domain.ReadOnlyEntity;
+import org.moresbycoffee.hibernatecache.domain.ReadWriteEntity;
+import org.moresbycoffee.hibernatecache.domain.Station;
 
 /**
  * Common functionalities for the hibernate cache tests.

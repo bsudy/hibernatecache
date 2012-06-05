@@ -28,7 +28,7 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.hibernatecache.domain;
+package org.moresbycoffee.hibernatecache.domain;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -38,14 +38,14 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
- * An entity configured with {@link CacheConcurrencyStrategy#READ_WRITE Read-write} cache strategy.
+ * An entity configured with {@link CacheConcurrencyStrategy#READ_ONLY Read-only} cache strategy.
  * 
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class ReadWriteEntity {
+@Cache(usage = CacheConcurrencyStrategy.READ_ONLY)
+public class ReadOnlyEntity {
 
     @Id
     @GeneratedValue
@@ -54,9 +54,9 @@ public class ReadWriteEntity {
     private String name;
 
     /** Default constructor for Hibernate. */
-    ReadWriteEntity() { /* NOP */ }
+    ReadOnlyEntity() { /* NOP */ }
 
-    public ReadWriteEntity(final String name) {
+    public ReadOnlyEntity(final String name) {
         super();
         this.name = name;
     }

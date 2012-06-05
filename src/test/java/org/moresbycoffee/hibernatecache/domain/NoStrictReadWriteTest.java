@@ -28,7 +28,7 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.hibernatecache.domain;
+package org.moresbycoffee.hibernatecache.domain;
 
 import java.util.List;
 
@@ -40,24 +40,25 @@ import org.apache.log4j.Logger;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.junit.Assert;
 import org.junit.Test;
+import org.moresbycoffee.hibernatecache.domain.NoStrictEntity;
 
 /**
  * This class can test the behavior of the Hibernate 2nd level cache
- * with {@link CacheConcurrencyStrategy#READ_ONLY read-only} entities.
+ * with {@link CacheConcurrencyStrategy#NONSTRICT_READ_WRITE nonstrict read-write} entities.
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class ReadOnlyTest extends EntityManagerTest {
+public class NoStrictReadWriteTest extends EntityManagerTest {
 
     /** Logger. */
-    private static final Logger LOG = Logger.getLogger(ReadOnlyTest.class);
+    private static final Logger LOG = Logger.getLogger(NoStrictReadWriteTest.class);
 
     @Test
-    public void addReadOnlyEntityCacheTest() {
-        //Tests the read only cached entities.
+    public void addNoStrictEntityCacheTest() {
+        //Tests the read write cached entities.
         LOG.info("---------------------------------------------------------------------");
-        LOG.info("------------------------- READ ONLY TEST ----------------------------");
+        LOG.info("------------------------- READ WRITE TEST ---------------------------");
         LOG.info("---------------------------------------------------------------------");
 
         final EntityManager em1 = emf.createEntityManager();
@@ -80,14 +81,15 @@ public class ReadOnlyTest extends EntityManagerTest {
 
         LOG.info("*** STEP 2");
         /*
-         * The new query from a different session does not hit the
-         * database because it can find everything in the 2nd level cache.
-         * Query cache: The query retrieved
-         * 2nd level cache: The entities are retrieved.
+         * The other session finds everything in the caches.
+         * Here is the difference between the Read-Write and the NoStrict Read-Write cache.
+         * In the No Strict Read-Write case Hibernate assumes that the entities have not changed.
+         * Query cache: The query will be found in the query cache.
+         * 2nd level cache: The entities in 2nd level cache.
          */
         countEntities(em2, "EM2");
         printStat(em2, "EM2");
-        assertStat(em2, 0, 1, 90, 0);
+        assertStat(em1, 0, 1, 90, 0);
 
         LOG.info("*** STEP 3");
         /*
@@ -105,7 +107,7 @@ public class ReadOnlyTest extends EntityManagerTest {
         LOG.info("*** STEP 4");
         /*
          * A new EntityManager is created which uses the query and
-         * the  2nd level cache.
+         * the 2nd level cache.
          */
         {
             final EntityManager em3 = emf.createEntityManager();
@@ -121,8 +123,8 @@ public class ReadOnlyTest extends EntityManagerTest {
         }
 
         LOG.info("*** STEP 5");
-        LOG.info("-------- INSERT NEW READ ONLY ENTITY -----------");
-        em1.persist(new ReadOnlyEntity("newEntity"));
+        LOG.info("-------- INSERT NEW READWRITE ENTITY -----------");
+        em1.persist(new NoStrictEntity("newEntity"));
         em1.flush();
         assertStat(em1, 1, 0, 0, 0);
 
@@ -138,18 +140,7 @@ public class ReadOnlyTest extends EntityManagerTest {
         printStat(em1, "EM1");
         assertStat(em1, 1, 0, 0, 0);
 
-//        em1.clear();
         LOG.info("*** STEP 7");
-        /*
-         * The same problem.
-         * Query cache: Not in use
-         * 2nd level cache: Not in use
-         */
-        countEntities(em1, "EM1");
-        printStat(em1, "EM1");
-        assertStat(em1, 1, 0, 0, 0);
-
-        LOG.info("*** STEP 8");
         /*
          * Here the em2 can't reach the database because the database is locked.
          * The result at this point is database dependent. The h2 database throws an exception
@@ -168,14 +159,14 @@ public class ReadOnlyTest extends EntityManagerTest {
             } catch (final PersistenceException e) {
                 LOG.info("The database table is locked. " + e.getMessage());
             }
-
+            assertStat(em1, 1, 0, 0, 0);
             em3.close();
         }
 
-        LOG.info("*** STEP 9 - COMMIT");
+        LOG.info("*** STEP 8 - COMMIT");
         transaction1Em1.commit();
 
-        LOG.info("*** STEP 10");
+        LOG.info("*** STEP 9");
         /*
          * Runs the query on the database and stores the new entity in the 2nd level cache.
          * Query cache: New result added.
@@ -183,10 +174,10 @@ public class ReadOnlyTest extends EntityManagerTest {
          */
         countEntities(em2, "EM2");
         printStat(em2, "EM2");
-        assertStat(em1, 2, 0, 0, 1);
+        assertStat(em1, 1, 0, 0, 1);
 
 
-        LOG.info("*** STEP 11");
+        LOG.info("*** STEP 10");
         /*
          * Uses the 2nd level cache and the query cache.
          * Query cache: in use.
@@ -211,35 +202,153 @@ public class ReadOnlyTest extends EntityManagerTest {
     }
 
     @Test
-    public void updateReadWriteEntityCacheTest() {
+    public void updateNoStrictEntityCacheTest() {
         //Tests the read write cached entities.
         LOG.info("---------------------------------------------------------------------");
-        LOG.info("------------------- READ ONLY UPDATE TEST ---------------------------");
+        LOG.info("------------------------- READ WRITE TEST ---------------------------");
         LOG.info("---------------------------------------------------------------------");
 
         final EntityManager em1 = emf.createEntityManager();
+        final EntityManager em2 = emf.createEntityManager();
 
         /* Starts transaction */
         final EntityTransaction transaction1Em1 = em1.getTransaction();
         transaction1Em1.begin();
 
-        LOG.info("-------- UPDATE NEW READONLY ENTITY -----------");
-        /* To retrieve an entity I'll use query and 2nd level cache */
-        @SuppressWarnings("unchecked")
-        final List<ReadOnlyEntity> rewriteEntities = em1.createQuery("select rw from ReadOnlyEntity rw").setHint("org.hibernate.cacheable", true).getResultList();
-        final ReadOnlyEntity readWriteEntity = rewriteEntities.get(0);
-        readWriteEntity.setName("NEW NAME");
-
+        LOG.info("*** STEP 1");
         /*
-         * Transaction commit should fail in read-only case.
+         * Hibernate retrieves the entities from the database
+         * and adds them to the 2nd level cache.
+         * Query cache: New query added.
+         * 2nd level cache: Entities from the result added.
          */
-        try {
-            transaction1Em1.commit();
-            Assert.fail("A read-only shouldn't be updateable.");
-        } catch (final javax.persistence.RollbackException e) {
-            LOG.info("The entity is not updateable. " + e.getMessage());
+        countEntities(em1, "EM1");
+        printStat(em1, "EM1");
+        assertStat(em1, 1, 0, 0, 90);
+
+        LOG.info("*** STEP 2");
+        /*
+         * The other session finds everything in the caches.
+         * Here is there difference between the Read-Write and the NoStrict Read-Write cache.
+         * In the No Strict Read-Write case the Hibernate assumes that the entities have not changed.
+         * Query cache: The query will be found in the query cache.
+         * 2nd level cache: The entities in 2nd level cache.
+         */
+        countEntities(em2, "EM2");
+        printStat(em2, "EM2");
+        assertStat(em1, 0, 1, 90, 0);
+
+        LOG.info("*** STEP 3");
+        /*
+         * Still everything in the second level cache. Query cache is in use
+         * but entity 2nd level cache no longer used because everything in the
+         * 1st level cache.
+         * Query cache: In use
+         * 2nd level cache: 1st level cache instead of the 2nd level cache.
+         */
+        countEntities(em1, "EM1");
+        printStat(em1, "EM1");
+        assertStat(em1, 0, 1, 0, 0);
+
+
+        LOG.info("*** STEP 4");
+        /*
+         * A new EntityManager is created which uses the query and
+         * the 2nd level cache because this transaction is newer than
+         * the content of the 2nd level cache.
+         */
+        {
+            final EntityManager em3 = emf.createEntityManager();
+            /*
+             * Query cache: In use
+             * 2nd level cache: In use.
+             */
+            countEntities(em3, "EM3");
+            printStat(em3, "EM3");
+            assertStat(em3, 0, 1, 90, 0);
+
+            em3.close();
         }
 
+        LOG.info("*** STEP 5");
+        LOG.info("-------- UPDATE NEW READWRITE ENTITY -----------");
+        /* To retrieve an entity I'll use query and 2nd level cache */
+        @SuppressWarnings("unchecked")
+        final List<NoStrictEntity> rewriteEntities = em1.createQuery("select rw from NoStrictEntity rw").setHint("org.hibernate.cacheable", true).getResultList();
+        final NoStrictEntity noStrictEntity = rewriteEntities.get(0);
+        noStrictEntity.setName("NEW NAME");
+        em1.flush();
+        assertStat(em1, 1, 1, 0, 0);
+
+        LOG.info("*** STEP 6");
+        /*
+         * The 2nd level cache is in invalid we added a modified an entry in a table and
+         * the hibernate doesn't know what would be the result of the query without
+         * the database.
+         * Query cache: Not in use
+         * 2nd level cache: Not in use
+         */
+        countEntities(em1, "EM1");
+        printStat(em1, "EM1");
+        assertStat(em1, 1, 0, 0, 0);
+
+        LOG.info("*** STEP 7");
+        /*
+         * Here the em2 can't reach the database because the database is locked.
+         * The result at this point is database dependent. The h2 database throws an exception
+         * so I'll catch it.
+         * The 2nd level cache is skipped.
+         */
+        {
+            final EntityManager em3 = emf.createEntityManager();
+            /*
+             * Query cache: In use
+             * 2nd level cache: In use
+             */
+            try {
+                countEntities(em3, "EM1");
+                Assert.fail("An exception should have been thrown.");
+            } catch (final PersistenceException e) {
+                LOG.info("The database table is locked. " + e.getMessage());
+            }
+            assertStat(em1, 1, 0, 0, 0);
+            em3.close();
+        }
+
+        LOG.info("*** STEP 8 - COMMIT");
+        transaction1Em1.commit();
+
+        LOG.info("*** STEP 9");
+        /*
+         * Runs the query on the database and stores the new entity in the 2nd level cache.
+         * Query cache: New result added.
+         * 2nd level cache: Modified entity added.
+         */
+        em2.clear();
+        countEntities(em2, "EM2");
+        printStat(em2, "EM2");
+        assertStat(em1, 1, 0, 0, 1);
+
+        LOG.info("*** STEP 10");
+        /*
+         * Uses the 2nd level cache and the query cache.
+         * Query cache: in use.
+         * 2nd level cache: in use.
+         */
+        {
+            final EntityManager em3 = emf.createEntityManager();
+            /*
+             * Query cache: In use
+             * 2nd level cache: In use
+             */
+            countEntities(em3, "EM1");
+            printStat(em3, "EM1");
+            assertStat(em3, 0, 1, 90, 0);
+
+            em3.close();
+        }
+
+        em2.close();
         em1.close();
 
     }
@@ -247,10 +356,8 @@ public class ReadOnlyTest extends EntityManagerTest {
     /**
      * @param em
      */
-    private void countEntities(final EntityManager em, final String emName) {
-        getEntities(em, ReadOnlyEntity.class, emName);
+    protected void countEntities(final EntityManager em, final String emName) {
+        getEntities(em, NoStrictEntity.class, emName);
     }
-
-
 
 }

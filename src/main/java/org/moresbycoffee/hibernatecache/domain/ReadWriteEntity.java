@@ -28,58 +28,53 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.hibernatecache.domain;
+package org.moresbycoffee.hibernatecache.domain;
 
-import static org.junit.Assert.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
-import java.util.List;
-
-import javax.persistence.EntityManager;
-
-import org.apache.log4j.Logger;
-import org.junit.Test;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
- * TODO javadoc.
- *
+ * An entity configured with {@link CacheConcurrencyStrategy#READ_WRITE Read-write} cache strategy.
+ * 
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class QueryCacheTest extends EntityManagerTest {
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+public class ReadWriteEntity {
 
-    /** Logger. */
-    @SuppressWarnings("unused")
-    private static final Logger LOG = Logger.getLogger(QueryCacheTest.class);
+    @Id
+    @GeneratedValue
+    private Long id;
 
-    /**
-     * Using Query cache without 2nd level cache can cause a huge number of database hit
-     * because the query cache result contains only the primary keys and the entities will
-     * be picked up from the database one-by-one.
-     */
-    @Test
-    public void withoutSecondLevelCacheTest() {
-        final EntityManager em1 = emf.createEntityManager();
-        //Number of the insert statements
-        final List<NoCacheEntity> entitiesNoChacheEm1 = getNoCacheEntities(em1, "EM1");
+    private String name;
 
-        printStat(em1, "EM1");
-        /* Entities haven't been added to 2nd level cache. */
-        assertStat(em1, 1, 0, 0, 0);
-        //One select statement added
-        em1.close();
+    /** Default constructor for Hibernate. */
+    ReadWriteEntity() { /* NOP */ }
 
-        final EntityManager em2 = emf.createEntityManager();
-        final List<NoCacheEntity> entitiesNoChacheEm2 = getNoCacheEntities(em2, "EM1");
-
-        printStat(em2, "EM2");
-        /* Entities haven't been added to 2nd level cache. */
-        assertStat(em2, 90, 1, 0, 0);
-
-        assertEquals(entitiesNoChacheEm1.size(), entitiesNoChacheEm2.size());
-        em2.close();
-
+    public ReadWriteEntity(final String name) {
+        super();
+        this.name = name;
     }
 
+    public Long getId() {
+        return id;
+    }
 
+    public void setId(final Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(final String name) {
+        this.name = name;
+    }
 
 }

@@ -28,7 +28,7 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.hibernatecache.domain;
+package org.moresbycoffee.hibernatecache.domain;
 
 import static org.junit.Assert.*;
 
@@ -40,6 +40,7 @@ import javax.persistence.EntityTransaction;
 import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
+import org.moresbycoffee.hibernatecache.domain.ReadWriteEntity;
 
 /**
  * TODO javadoc.
